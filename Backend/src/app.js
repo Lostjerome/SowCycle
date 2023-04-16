@@ -1,8 +1,9 @@
 const express = require("express");
-const app = express();
 const requireDir = require("require-dir");
 const routes = requireDir("./routes");
 const bodyParser = require("body-parser");
+
+const app = express();
 
 app.use(bodyParser.json());
 
