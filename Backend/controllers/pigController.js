@@ -10,6 +10,25 @@ module.exports.getAllPigs = async (req, res) => {
   }
 };
 
+module.exports.getPigsByPage = async (req, res) => {
+  let { pageSize, page } = req.query;
+  pageSize = parseInt(pageSize);
+  page = parseInt(page);
+  const offset = pageSize * page;
+
+  try {
+    if (!page && !pageSize) {
+      const pigs = await pigModel.getAll();
+      return res.status(200).json(pigs);
+    }
+    const pigs = await pigModel.getByPaginated(pageSize, offset);
+    res.status(200).json(pigs);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
 module.exports.getPigById = async (req, res) => {
   try {
     const pig = await pigModel.getById(req.params.id);

@@ -9,6 +9,19 @@ function getAll() {
   });
 }
 
+function getByPaginated(pageSize, offset) {
+  return new Promise((resolve, reject) => {
+    database.query(
+      "SELECT * FROM pigs LIMIT ? OFFSET ? ",
+      [pageSize, offset],
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results);
+      }
+    );
+  });
+}
+
 function getById(id) {
   return new Promise((resolve, reject) => {
     database.query("SELECT * FROM pigs WHERE id = ?", [id], (err, results) => {
@@ -55,6 +68,7 @@ function remove(id) {
 
 module.exports = {
   getAll,
+  getByPaginated,
   getById,
   create,
   update,
