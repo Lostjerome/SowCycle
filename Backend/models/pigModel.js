@@ -31,8 +31,32 @@ function create(id, name) {
   });
 }
 
+function update(id, name) {
+  return new Promise((resolve, reject) => {
+    database.query(
+      "UPDATE pigs SET name = ? WHERE id = ?",
+      [name, id],
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results);
+      }
+    );
+  });
+}
+
+function remove(id) {
+  return new Promise((resolve, reject) => {
+    database.query("DELETE FROM pigs WHERE id = ?", [id], (err, results) => {
+      if (err) reject(err);
+      resolve(results);
+    });
+  });
+}
+
 module.exports = {
   getAll,
   getById,
   create,
+  update,
+  remove,
 };
