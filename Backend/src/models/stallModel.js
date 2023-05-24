@@ -2,7 +2,7 @@ const database = require("../utils/database");
 
 function getAll() {
   return new Promise((resolve, reject) => {
-    database.query("SELECT * FROM pigs", (err, results) => {
+    database.query("SELECT * FROM stalls", (err, results) => {
       if (err) reject(err);
       resolve(results);
     });
@@ -12,7 +12,7 @@ function getAll() {
 function getByPaginated(pageSize, offset) {
   return new Promise((resolve, reject) => {
     database.query(
-      "SELECT * FROM pigs LIMIT ? OFFSET ? ",
+      "SELECT * FROM stalls LIMIT ? OFFSET ? ",
       [pageSize, offset],
       (err, results) => {
         if (err) reject(err);
@@ -24,18 +24,22 @@ function getByPaginated(pageSize, offset) {
 
 function getById(id) {
   return new Promise((resolve, reject) => {
-    database.query("SELECT * FROM pigs WHERE id = ?", [id], (err, results) => {
-      if (err) reject(err);
-      resolve(results);
-    });
+    database.query(
+      "SELECT * FROM stalls WHERE id = ?",
+      [id],
+      (err, results) => {
+        if (err) reject(err);
+        resolve(results);
+      }
+    );
   });
 }
 
-function create(id, name) {
+function create(name) {
   return new Promise((resolve, reject) => {
     database.query(
-      "INSERT INTO pigs(id,name) VALUES (?,?)",
-      [id, name],
+      "INSERT INTO stalls(number) VALUES (?)",
+      [name],
       (err, results) => {
         if (err) reject(err);
         resolve(results);
@@ -47,7 +51,7 @@ function create(id, name) {
 function update(id, name) {
   return new Promise((resolve, reject) => {
     database.query(
-      "UPDATE pigs SET name = ? WHERE id = ?",
+      "UPDATE stalls SET name = ? WHERE id = ?",
       [name, id],
       (err, results) => {
         if (err) reject(err);
@@ -59,7 +63,7 @@ function update(id, name) {
 
 function remove(id) {
   return new Promise((resolve, reject) => {
-    database.query("DELETE FROM pigs WHERE id = ?", [id], (err, results) => {
+    database.query("DELETE FROM stalls WHERE id = ?", [id], (err, results) => {
       if (err) reject(err);
       resolve(results);
     });
