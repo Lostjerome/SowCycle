@@ -1,27 +1,22 @@
-const sowModel = require("../models/sowModel");
+const Sow = require("@models/sowModel");
+const History = require("@models/historyModel");
 
 module.exports.getAllSows = async (req, res) => {
     try {
-        const sows = await sowModel.getAll();
-        res.status(200).json(sows);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ error: "Something went wrong" });
-    }
-};
+        // populate histories if any
+        let sows = await Sow.find()
+            .populate("status")
+            .populate("stall")
+            .populate("histories");
+        let histories = await History.find();
 
-module.exports.getSowsByPage = async (req, res) => {
-    let { pageSize, page } = req.query;
-    pageSize = parseInt(pageSize);
-    page = parseInt(page);
-    const offset = pageSize * page;
+        sows = sows.map((sow) => {
+            let sowHistories = histories.filter(
+                (history) => history.sow_id === sow._id
+            );
+            return { ...sow._doc, histories: sowHistories };
+        });
 
-    try {
-        if (!page && !pageSize) {
-            const sows = await sowModel.getAll();
-            return res.status(200).json(sows);
-        }
-        const sows = await sowModel.getByPaginated(pageSize, offset);
         res.status(200).json(sows);
     } catch (err) {
         console.log(err);
@@ -30,9 +25,12 @@ module.exports.getSowsByPage = async (req, res) => {
 };
 
 module.exports.getSowById = async (req, res) => {
+    const { _id } = req.params;
     try {
-        const sow = await sowModel.getById(req.params.id);
-        res.status(200).json(sow);
+        let sow = await Sow.findById(_id).populate("status").populate("stall");
+        let histories = await History.find({ sow_id: _id });
+
+        res.status(200).json({ ...sow._doc, histories });
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: "Something went wrong" });
@@ -40,14 +38,16 @@ module.exports.getSowById = async (req, res) => {
 };
 
 module.exports.addSow = async (req, res) => {
-    const { id, name } = req.body;
-    if (!id || !name)
-        return res.status(400).json({ error: "Missing sow ID or name" });
+    const { name, status } = req.body;
+
+    if (!name || status === undefined)
+        return res.status(400).json({ error: "Missing sow details" });
+
+    let sow = new Sow({ name, status });
+
     try {
-        sowModel.create(id, name);
-        // return the newly created sow in the response
-        const newSow = await sowModel.getById(id);
-        res.status(201).json(newSow[0]);
+        sow = await sow.save();
+        res.status(201).json({ sow, message: "Sow created" });
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: "Something went wrong" });
@@ -55,13 +55,22 @@ module.exports.addSow = async (req, res) => {
 };
 
 module.exports.updateSow = async (req, res) => {
-    const { id, name } = req.body;
-    if (!id || !name)
-        return res.status(400).json({ error: "Missing sow ID or name" });
+    const { _id } = req.params;
+    const { name, status_id } = req.body;
+    if (!name || status_id === undefined)
+        return res.status(400).json({ error: "Missing sow details" });
+
     try {
-        sowModel.update(id, name);
-        const newSow = await sowModel.getById(id);
-        res.status(201).json(newSow[0]);
+        let updatedSow = await Sow.findOneAndUpdate(
+            { _id },
+            { name, status_id },
+            { returnOriginal: false }
+        );
+
+        res.status(200).json({
+            updatedSow,
+            message: "Sow updated",
+        });
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: "Something went wrong" });
@@ -69,11 +78,14 @@ module.exports.updateSow = async (req, res) => {
 };
 
 module.exports.deleteSow = async (req, res) => {
+    const { _id } = req.params;
     try {
-        const sow = await sowModel.remove(req.params.id);
-        res.status(200).json(sow);
+        await Sow.deleteOne({ _id });
+        res.status(200).json({ message: "Sow deleted" });
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: "Something went wrong" });
     }
 };
+
+// module.exports.getSowsByPage = async (req, res) => {};

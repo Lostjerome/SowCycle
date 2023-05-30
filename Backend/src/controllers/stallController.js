@@ -1,23 +1,73 @@
-const stallModel = require("../models/stallModel");
+const Stall = require("@models/stallModel");
 
-module.exports.getAllStalls = async (req, res) => {
-  try {
-    const stalls = await stallModel.getAll();
-    res.status(200).json(stalls);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Something went wrong" });
-  }
+exports.getAllStalls = async (req, res) => {
+    try {
+        const stalls = await Stall.find();
+        res.status(200).json(stalls);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Something went wrong" });
+    }
 };
 
-module.exports.addStall = async (req, res) => {
-  const { number } = req.body;
-  if (!number) return res.status(400).json({ error: "Missing stall number" });
-  try {
-    stallModel.create(number);
-    res.status(201).json({ message: "Stall created" });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Something went wrong" });
-  }
+exports.getStallById = async (req, res) => {
+    const { _id } = req.params;
+    try {
+        const stall = await Stall.findById(_id);
+        res.status(200).json(stall);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+};
+
+exports.addStall = async (req, res) => {
+    const { name, stall_type } = req.body;
+
+    if (!name || !stall_type)
+        return res.status(400).json({ error: "Missing stall details" });
+
+    let stall = new Stall({ name, stall_type });
+
+    try {
+        stall = await stall.save();
+        res.status(201).json({ stall, message: "Stall created" });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+};
+
+exports.updateStall = async (req, res) => {
+    const { _id } = req.params;
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: "Missing stall details" });
+
+    try {
+        let updatedStall = await Stall.findOneAndUpdate(
+            { _id },
+            { name },
+            { returnOriginal: false }
+        );
+
+        res.status(200).json({
+            updatedStall,
+            message: "Stall updated",
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+};
+
+exports.deleteStall = async (req, res) => {
+    const { _id } = req.params;
+
+    try {
+        await Stall.findOneAndDelete({ _id });
+        res.status(200).json({ message: "Stall deleted" });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Something went wrong" });
+    }
 };
