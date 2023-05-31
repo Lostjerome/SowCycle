@@ -1,22 +1,9 @@
 const Sow = require("@models/sowModel");
-const History = require("@models/historyModel");
 
 module.exports.getAllSows = async (req, res) => {
     try {
         // populate histories if any
-        let sows = await Sow.find()
-            .populate("status")
-            .populate("stall")
-            .populate("histories");
-        let histories = await History.find();
-
-        sows = sows.map((sow) => {
-            let sowHistories = histories.filter(
-                (history) => history.sow_id === sow._id
-            );
-            return { ...sow._doc, histories: sowHistories };
-        });
-
+        let sows = await Sow.find().populate("stall");
         res.status(200).json(sows);
     } catch (err) {
         console.log(err);
@@ -27,10 +14,8 @@ module.exports.getAllSows = async (req, res) => {
 module.exports.getSowById = async (req, res) => {
     const { _id } = req.params;
     try {
-        let sow = await Sow.findById(_id).populate("status").populate("stall");
-        let histories = await History.find({ sow_id: _id });
-
-        res.status(200).json({ ...sow._doc, histories });
+        let sow = await Sow.findById(_id).populate("stall");
+        res.status(200).json(sow);
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: "Something went wrong" });
@@ -38,12 +23,11 @@ module.exports.getSowById = async (req, res) => {
 };
 
 module.exports.addSow = async (req, res) => {
-    const { name, status } = req.body;
-
-    if (!name || status === undefined)
+    const { name, status, stall } = req.body;
+    if (!name || !status || !stall)
         return res.status(400).json({ error: "Missing sow details" });
 
-    let sow = new Sow({ name, status });
+    let sow = new Sow({ name, status, stall });
 
     try {
         sow = await sow.save();
@@ -56,14 +40,14 @@ module.exports.addSow = async (req, res) => {
 
 module.exports.updateSow = async (req, res) => {
     const { _id } = req.params;
-    const { name, status_id } = req.body;
-    if (!name || status_id === undefined)
+    const { name, status, stall, histories } = req.body;
+    if (!name || !status || !stall || !histories)
         return res.status(400).json({ error: "Missing sow details" });
 
     try {
         let updatedSow = await Sow.findOneAndUpdate(
             { _id },
-            { name, status_id },
+            { name, status, stall, histories },
             { returnOriginal: false }
         );
 

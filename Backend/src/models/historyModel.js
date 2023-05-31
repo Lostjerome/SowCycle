@@ -7,11 +7,11 @@ const historySchema = new mongoose.Schema({
     },
     breedDate: {
         type: Date,
+        default: Date.now,
         required: true,
     },
     farrowDate: {
         type: Date,
-        required: true,
     },
 });
 

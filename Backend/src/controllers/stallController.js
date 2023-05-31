@@ -21,13 +21,23 @@ exports.getStallById = async (req, res) => {
     }
 };
 
-exports.addStall = async (req, res) => {
-    const { name, stall_type } = req.body;
+exports.getVacantStalls = async (req, res) => {
+    try {
+        const stalls = await Stall.find({ status: "vacant" });
+        res.status(200).json(stalls);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+};
 
-    if (!name || !stall_type)
+exports.addStall = async (req, res) => {
+    const { name, status, stall_type } = req.body;
+
+    if (!name || !status || !stall_type)
         return res.status(400).json({ error: "Missing stall details" });
 
-    let stall = new Stall({ name, stall_type });
+    let stall = new Stall({ name, status, stall_type });
 
     try {
         stall = await stall.save();
@@ -40,13 +50,14 @@ exports.addStall = async (req, res) => {
 
 exports.updateStall = async (req, res) => {
     const { _id } = req.params;
-    const { name } = req.body;
-    if (!name) return res.status(400).json({ error: "Missing stall details" });
+    const { name, status, stall_type } = req.body;
+    if (!name || !status || !stall_type)
+        return res.status(400).json({ error: "Missing stall details" });
 
     try {
         let updatedStall = await Stall.findOneAndUpdate(
             { _id },
-            { name },
+            { name, status, stall_type },
             { returnOriginal: false }
         );
 

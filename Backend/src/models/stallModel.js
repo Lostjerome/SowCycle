@@ -5,8 +5,14 @@ const stallSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    status: {
+        type: String,
+        enum: ["vacant", "occupied"],
+        default: "vacant",
+    },
     stall_type: {
         type: String,
+        enum: ["breeding", "farrowing"],
         required: true,
     },
 });

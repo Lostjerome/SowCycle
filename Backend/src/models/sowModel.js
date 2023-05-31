@@ -7,19 +7,14 @@ const sowSchema = new mongoose.Schema({
         trim: true,
     },
     status: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Status",
+        type: String,
+        enum: ["normal", "pregnant"],
+        default: "normal",
     },
     stall: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Stall",
     },
-    histories: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "History",
-        },
-    ],
 });
 
 module.exports = mongoose.model("Sow", sowSchema);
