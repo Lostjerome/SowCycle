@@ -1,0 +1,18 @@
+{
+    "hosting": {
+        "public": "build",
+        "ignore": ["**/.firebase/**"],
+        "cleanUrls": true,
+        "rewrites": [
+            {
+                "source": "**",
+                "function": "handler"
+            }
+        ]
+    },
+    "functions": [
+        {
+            "source": "build"
+        }
+    ]
+}
